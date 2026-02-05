@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+pip-wheel-metadata/
+.eggs/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.python-version
+
+# Playwright
+.playwright/
+playwright-report/
+test-results/
+trace.zip
+trace/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# IDEs / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.*
+
+# OS
+Thumbs.db
+Desktop.ini
