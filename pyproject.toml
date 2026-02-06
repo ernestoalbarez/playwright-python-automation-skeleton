@@ -33,7 +33,7 @@ name = "playwright-python-automation-skeleton"
 version = "0.1.0"
 description = "Professional Playwright automation testing skeleton in Python"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 requires-python = ">=3.11"
 
 dependencies = [
