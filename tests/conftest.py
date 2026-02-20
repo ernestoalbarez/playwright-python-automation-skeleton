@@ -1,18 +1,11 @@
 """
 Global pytest configuration and fixtures.
-
-This module defines shared fixtures used across the test suite, including:
-- Playwright lifecycle management
-- Browser, context, and page setup/teardown
-- Centralized configuration via settings
-
-Design goals:
-- Single Playwright instance per session
-- Single browser per session
-- Isolated browser context per test
-- Clean, explicit lifecycle management
-- CI-friendly and locally debuggable
 """
+
+from collections.abc import Generator
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 import pytest
 from playwright.sync_api import (
@@ -28,68 +21,64 @@ from utils.browser import launch_browser
 
 
 @pytest.fixture(scope="session")
-def playwright_instance() -> Playwright:
-    """
-    Starts a single Playwright instance for the entire test session.
-
-    Session scope avoids unnecessary startup overhead and mirrors
-    Playwright's intended lifecycle usage.
-    """
+def playwright_instance() -> Generator[Playwright, None, None]:
+    """Starts a single Playwright instance for the entire test session."""
     with sync_playwright() as playwright:
         yield playwright
 
 
 @pytest.fixture(scope="session")
-def browser(playwright_instance: Playwright) -> Browser:
-    """
-    Launches a single browser for the entire test session.
-
-    Browser type, headless mode, and slow motion are fully driven
-    by environment-based settings.
-    """
-    browser = launch_browser(
-        playwright=playwright_instance,
-        browser_name=settings.BROWSER,
-        headless=settings.HEADLESS,
-        slow_mo=settings.SLOW_MO,
-    )
+def browser(playwright_instance: Playwright) -> Generator[Browser, None, None]:
+    """Launches a single browser for the entire test session."""
+    browser = launch_browser(playwright_instance)
     yield browser
     browser.close()
 
 
 @pytest.fixture(scope="function")
-def context(browser: Browser) -> BrowserContext:
-    """
-    Creates a fresh browser context per test.
-
-    This guarantees full test isolation (cookies, storage, cache),
-    while still reusing the same browser process for performance.
-    """
+def context(browser: Browser) -> Generator[BrowserContext, None, None]:
+    """Creates a fresh browser context per test for full isolation."""
     context = browser.new_context(
-        base_url=settings.BASE_URL,
-        viewport=settings.VIEWPORT,
+        base_url=settings.base_url,
+        viewport=settings.viewport,
     )
 
-    # Apply timeouts at the context level
-    context.set_default_timeout(settings.TIMEOUT)
-    context.set_default_navigation_timeout(settings.NAVIGATION_TIMEOUT)
+    context.set_default_timeout(settings.timeout_ms)
+    context.set_default_navigation_timeout(settings.navigation_timeout_ms)
 
     yield context
     context.close()
 
 
 @pytest.fixture(scope="function")
-def page(context: BrowserContext) -> Page:
-    """
-    Provides a clean Page instance for each test.
-
-    Page-level default timeout is aligned with context settings
-    to ensure consistent behavior across all interactions.
-    """
+def page(context: BrowserContext, request: pytest.FixtureRequest) -> Generator[Page, None, None]:
+    """Provides a clean Page instance and handles failure reporting."""
     page = context.new_page()
-
-    # Explicitly set page timeout for clarity and future overrides
-    page.set_default_timeout(settings.TIMEOUT)
+    page.set_default_timeout(settings.timeout_ms)
 
     yield page
+
+    # Screenshot on failure
+    if hasattr(request.node, "rep_call") and request.node.rep_call.failed:
+        _take_screenshot(page, request.node.name)
+
     page.close()
+
+
+def _take_screenshot(page: Page, test_name: str) -> None:
+    """Captures a screenshot for failed tests."""
+    screenshots_dir = Path("screenshots")
+    screenshots_dir.mkdir(exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filepath = screenshots_dir / f"{test_name}_{timestamp}.png"
+    page.screenshot(path=str(filepath), full_page=True)
+    print(f"\nScreenshot saved to: {filepath}")
+
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item: pytest.Item, call: Any) -> Generator[None, Any, None]:
+    """Hook to make test results available to fixtures."""
+    outcome = yield
+    rep = outcome.get_result()
+    setattr(item, "rep_" + rep.when, rep)
