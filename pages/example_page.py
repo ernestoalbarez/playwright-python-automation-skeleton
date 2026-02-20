@@ -1,5 +1,6 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Locator, Page, expect
 
+from locators.example_locators import ExampleLocators
 from pages.base_page import BasePage
 
 
@@ -10,11 +11,11 @@ class ExamplePage(BasePage):
         super().__init__(page)
 
     @property
-    def heading(self):
-        return self.locator("h1")
+    def heading(self) -> Locator:
+        return self.locator(ExampleLocators.HEADING)
 
     def open(self) -> None:
-        self.goto(self.URL)
+        self.navigate(self.URL)
 
     def expect_heading(self, text: str) -> None:
-        assert self.heading.text_content() == text
+        expect(self.heading).to_have_text(text)

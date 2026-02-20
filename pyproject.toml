@@ -40,6 +40,8 @@ dependencies = [
     "playwright>=1.42.0",
     "pytest>=8.0.0",
     "pytest-playwright>=0.5.0",
+    "pytest-rerunfailures>=14.0",
+    "allure-pytest>=2.13.0",
 ]
 
 [tool.mypy]
@@ -47,7 +49,4 @@ python_version = "3.11"
 strict = true
 ignore_missing_imports = true
 warn_unused_configs = true
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-ra -q"
+explicit_package_bases = true
