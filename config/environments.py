@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class Environment(str, Enum):
+class Environment(StrEnum):
     LOCAL = "local"
     STAGING = "staging"
     PROD = "prod"
