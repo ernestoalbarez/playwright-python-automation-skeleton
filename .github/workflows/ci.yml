@@ -10,7 +10,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     timeout-minutes: 20
 
     steps:
@@ -26,18 +25,26 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pre-commit
-          pip install -r requirements.txt || true
-          pip install playwright pytest pytest-playwright
+          pip install playwright pytest pytest-playwright pytest-rerunfailures allure-pytest mypy ruff black
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pyproject.toml') }}
 
       - name: Install Playwright browsers
-        run: |
-          playwright install --with-deps
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: playwright install --with-deps
 
-      - name: Run pre-commit hooks
+      - name: Run linting
         run: |
-          pre-commit run --all-files
+          ruff check .
+          black --check .
+
+      - name: Run type check
+        run: mypy .
 
       - name: Run tests
-        run: |
-          pytest
+        run: pytest
