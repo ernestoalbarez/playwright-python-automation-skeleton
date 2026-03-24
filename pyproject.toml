@@ -44,6 +44,14 @@ dependencies = [
     "allure-pytest>=2.13.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pre-commit",
+    "ruff",
+    "black",
+    "mypy",
+]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true
