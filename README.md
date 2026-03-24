@@ -1,3 +1,9 @@
+![CI](https://github.com/ernestoalbarez/playwright-python-automation-skeleton/actions/workflows/ci.yml/badge.svg)
+![Lint](https://img.shields.io/badge/lint-ruff-blue?logo=ruff)
+![Python](https://img.shields.io/badge/python-3.11+-3776AB?logo=python&logoColor=white)
+![Playwright](https://img.shields.io/badge/playwright-e2e-45ba63?logo=playwright)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 # Playwright Python Automation Skeleton
 
 ## Overview
@@ -38,30 +44,36 @@ It is designed as a **reusable template** that prioritizes scalability, type saf
 ### Prerequisites
 
 - Python 3.11+
+- uv (Python package manager)
 - [Allure Commandline](https://docs.qameta.io/allure/#_installing_a_commandline) (for reporting)
 
 ### Installation
 
 1. **Clone the template**:
    ```bash
-   git clone <repository-url>
+   git clone git@github.com:ernestoalbarez/playwright-python-automation-skeleton.git
    cd playwright-python-automation-skeleton
    ```
 
-2. **Set up virtual environment**:
+2. **Install uv**:
    ```bash
-   python -m venv .venv
+   curl -Ls https://astral.sh/uv/install.sh | sh
+   ```
+
+3. **Set up virtual environment**:
+   ```bash
+   uv venv
    source .venv/bin/activate  # macOS/Linux
-   # .\.venv\Scripts\activate  # Windows
+   # .venv\Scripts\activate  # Windows
    ```
 
-3. **Install dependencies**:
+4. **Install dependencies**:
    ```bash
-   pip install -e .
-   playwright install --with-deps
+   uv sync
+   uv run playwright install --with-deps
    ```
 
-4. **Install pre-commit hooks**:
+5. **Install pre-commit hooks**:
    ```bash
    pre-commit install
    ```
@@ -72,23 +84,34 @@ It is designed as a **reusable template** that prioritizes scalability, type saf
 
 ### Execute all tests
 ```bash
-pytest
+uv run pytest
 ```
 
 ### Run with different environment
 ```bash
-ENV=staging pytest
+ENV=staging uv run pytest
 ```
 
 ### Run in a specific browser
 ```bash
-BROWSER=firefox pytest
+BROWSER=firefox uv run pytest
 ```
 
 ### Generate and View Allure Report
 ```bash
 allure serve allure-results
 ```
+
+---
+
+## CI Status
+
+This project runs:
+
+- Lint (Ruff)
+- Format check (Black)
+- Type checking (mypy)
+- Playwright E2E tests
 
 ---
 
